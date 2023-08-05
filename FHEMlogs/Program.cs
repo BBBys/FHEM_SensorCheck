@@ -22,18 +22,23 @@ namespace FHEMlogs
       else
         LogDir = Settings.Default.LogDir;
       verzeichnis = new DirectoryInfo(LogDir);
-      if (verzeichnis.Exists)
+      if(verzeichnis.Exists)
       {
         dateien = verzeichnis.GetFiles("*.log");
-        if (dateien.Count() > 0)
-          foreach (FileInfo datei in dateien)
+        if(dateien.Count() > 0)
+          foreach(FileInfo datei in dateien)
             EineDatei(datei, messwerte);
+        // messwerte enthält jetzt die Sensornamen unf die Zeit des letztn Messwertes
+
         else
           Console.WriteLine("keine Dateien im Verzeichnis");
       }
       else
-        Console.WriteLine("Verzeichnis existiert nicht");
-      foreach (var item in messwerte)
+      {
+        Console.WriteLine(verzeichnis.FullName);
+        throw new Exception ("Verzeichnis existiert nicht") ;
+      }
+      foreach(var item in messwerte)
       {
         Console.WriteLine(item);
       }

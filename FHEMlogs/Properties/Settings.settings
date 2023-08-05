@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="LogDir" Type="System.String" Scope="User">
-      <Value Profile="(Default)">\\fhem.fritz.box\fhemlog</Value>
+      <Value Profile="(Default)">/opt/fhem/log</Value>
     </Setting>
   </Settings>
 </SettingsFile>
