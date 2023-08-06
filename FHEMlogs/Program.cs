@@ -1,23 +1,21 @@
-﻿using System;
+﻿using FHEMlogs.Properties;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FHEMlogs.Properties;
 
 
 namespace FHEMlogs
 {
-  class Program
+  internal class Program
   {
-    static void Main(string[] args)
+    private static void Main(string[ ] args)
     {
       DirectoryInfo verzeichnis;
       String LogDir ;
       FileInfo[] dateien;
       Dictionary<String, DateTime> messwerte = new Dictionary<String, DateTime>();
-      if(args.Length>0)
+      if(args.Length > 0)
         LogDir = args[0];
       else
         LogDir = Settings.Default.LogDir;
@@ -27,8 +25,9 @@ namespace FHEMlogs
         dateien = verzeichnis.GetFiles("*.log");
         if(dateien.Count() > 0)
           foreach(FileInfo datei in dateien)
-            EineDatei(datei, messwerte);
-        // messwerte enthält jetzt die Sensornamen unf die Zeit des letztn Messwertes
+            EineDatei(datei, messwerte);  //foreach
+        // messwerte enthält jetzt die Sensornamen und die Zeit des letzten
+        // Messwertes
 
         else
           Console.WriteLine("keine Dateien im Verzeichnis");
@@ -36,11 +35,19 @@ namespace FHEMlogs
       else
       {
         Console.WriteLine(verzeichnis.FullName);
-        throw new Exception ("Verzeichnis existiert nicht") ;
+        throw new Exception("Verzeichnis existiert nicht");
       }
-      foreach(var item in messwerte)
+      DateTime jetzt=DateTime.Now;
+      TimeSpan maxAlter=TimeSpan.FromHours(18);
+      foreach(KeyValuePair<String, DateTime> item in messwerte)
       {
-        Console.WriteLine(item);
+
+        if((jetzt - item.Value) > maxAlter)
+        {
+          Console.WriteLine(item);
+          Console.WriteLine("letzter Messwert {0}", jetzt - item.Value);
+        }
+
       }
       Console.WriteLine("fertig");
       //Console.ReadKey();
@@ -54,60 +61,60 @@ namespace FHEMlogs
     private static void EineDatei(FileInfo datei, Dictionary<String, DateTime> messwerte)
     {
       StreamReader streamReader;
-      if (messwerte == null)
+      if(messwerte == null)
         throw new ArgumentNullException(nameof(messwerte));
-      if (datei == null)
+      if(datei == null)
         throw new ArgumentNullException(nameof(datei));
-      Console.WriteLine(datei.Name);
-      if (datei.Name.EndsWith("fhem.log"))
+      //Console.WriteLine(datei.Name);
+      if(datei.Name.EndsWith("fhem.log"))
         return;
-      if (datei.Name.StartsWith("autocreated-"))
+      if(datei.Name.StartsWith("autocreated-"))
         return;
-      if (datei.Length < 1)
+      if(datei.Length < 1)
         return;
-      Console.WriteLine(datei.Length);
+      //Console.WriteLine(datei.Length);
       streamReader = File.OpenText(datei.FullName);
-      using (TextReader textReader = streamReader)
+      using(TextReader textReader = streamReader)
       {
-        while (!streamReader.EndOfStream)
+        while(!streamReader.EndOfStream)
         {
           DateTime messzeit;
           String zeile;
           String[] teile, zeit, datum, datumzeit;
           zeile = textReader.ReadLine();
           teile = zeile.Split(' ');
-          if (teile[0].Length != 19)
+          if(teile[0].Length != 19)
           {
-            Console.WriteLine(zeile);
+            Console.WriteLine("Länge nicht 19: {0}", zeile);
             continue;
           }
           datumzeit = teile[0].Split('_');
-          if (datumzeit.Length != 2)
+          if(datumzeit.Length != 2)
           {
-            Console.WriteLine(zeile);
+            Console.WriteLine("Länge nicht 2: {0}", zeile);
             continue;
           }
           datum = datumzeit[0].Split('-');
-          if (datum.Length != 3)
+          if(datum.Length != 3)
           {
-            Console.WriteLine(zeile);
+            Console.WriteLine("Datum Länge nicht 3: {0}", zeile);
             continue;
           }
           zeit = datumzeit[1].Split(':');
-          if (zeit.Length != 3)
+          if(zeit.Length != 3)
           {
-            Console.WriteLine(zeile);
+            Console.WriteLine("Zeit Länge nicht 3: {0}", zeile);
             continue;
           }
           messzeit = new DateTime(Convert.ToInt16(datum[0]), Convert.ToInt16(datum[1]), Convert.ToInt16(datum[2]), Convert.ToInt16(zeit[0]), Convert.ToInt16(zeit[1]), Convert.ToInt16(zeit[2]));
-          if (messwerte.ContainsKey(teile[1]))
+          if(messwerte.ContainsKey(teile[1]))
           {
             Boolean ja;
             ja = messwerte.TryGetValue(teile[1], out DateTime alteZeit);
-            if (ja)
-              if (messzeit > alteZeit)
+            if(ja)
+              if(messzeit > alteZeit)
               {
-                messwerte.Remove(teile[1]);
+                _ = messwerte.Remove(teile[1]);
                 messwerte.Add(teile[1], messzeit);
               }
           }
